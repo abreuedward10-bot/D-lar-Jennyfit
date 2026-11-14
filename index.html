@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -42,9 +41,8 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding: 10px;
+            padding: 0; /* Sin espacios en los bordes */
             color: var(--text-main);
-            padding-top: 10px; 
         }
 
         .app-container {
@@ -52,39 +50,40 @@
             max-width: 400px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px; /* Espacio entre los botones de abajo */
+            padding-top: 10px;
         }
 
         #capture-area {
             background-color: var(--bg-color);
-            padding: 5px;
+            padding: 0;
             border-radius: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 5px; /* Prácticamente pegado entre logo, tarjeta y fecha */
             width: 100%;
         }
 
-        /* LOGO DE RESPALDO POR SI FALLA LA IMAGEN */
+        /* LOGO MÁS GRANDE Y PEGADO */
         .app-header {
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            padding: 15px 0;
-            margin-top: 5px;
-            position: relative;
+            padding: 0;
+            margin-top: 10px;
+            margin-bottom: 5px; /* Espacio mínimo antes de la tarjeta */
         }
 
         .app-header img {
-            max-height: 110px;
-            max-width: 100%;
+            max-height: 150px; /* Mucho más grande */
+            max-width: 90%;
             object-fit: contain;
             border-radius: 12px; 
         }
 
         .logo-fallback {
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 800;
             font-style: italic;
             letter-spacing: -1px;
@@ -226,8 +225,9 @@
 
         .bottom-bar {
             display: flex;
-            gap: 0;
+            gap: 10px; /* Volvemos a poner espacio para el botón */
             width: 100%;
+            margin-top: 5px;
         }
 
         .date-display {
@@ -338,6 +338,7 @@
 
         svg { width: 24px; height: 24px; fill: currentColor; }
 
+        /* Esta clase ya solo afectará a los botones de copiar y al de whatsapp de arriba */
         .hide-in-capture {
             display: none !important;
         }
@@ -349,9 +350,7 @@
         
         <div id="capture-area">
             <label for="logo-upload" class="app-header" title="Toca para cambiar el logo">
-                <!-- Imagen del logo. Si falla, muestra el texto JENNYFIT -->
                 <img src="https://i.ibb.co/6PZgXK5/jennyfit-logo.png" alt="JennyFit Logo" id="app-logo" style="display: none;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';" onload="this.style.display='block'; document.getElementById('fallback-logo').style.display='none';">
-                <!-- Logo de respaldo (Texto) -->
                 <div class="logo-fallback" id="fallback-logo" style="display: block;">
                     <span class="white">JENNY</span><span class="green">FIT</span>
                 </div>
@@ -400,7 +399,8 @@
                 <div class="date-display">
                     <span id="datetime-text">Cargando...</span>
                 </div>
-                <button class="icon-btn hide-in-capture" id="btn-refresh" title="Actualizar tasas" onclick="actualizarTasas()">
+                <!-- AQUÍ ESTÁ EL BOTÓN DE ACTUALIZAR (Ya no tiene la clase hide-in-capture) -->
+                <button class="icon-btn" id="btn-refresh" title="Actualizar tasas" onclick="actualizarTasas()">
                     <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                 </button>
             </div>
@@ -443,13 +443,10 @@
         const btnRefresh = document.getElementById('btn-refresh');
         const datetimeText = document.getElementById('datetime-text');
 
-        // PROTECCIÓN DE MEMORIA (Evita que la app crashee si el teléfono bloquea el almacenamiento)
         try {
             const savedLogo = localStorage.getItem('miAppLogo');
             if (savedLogo) { appLogo.src = savedLogo; }
-        } catch (e) {
-            console.warn("El almacenamiento local está bloqueado por el navegador.");
-        }
+        } catch (e) {}
 
         logoUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -500,25 +497,21 @@
 
         function getActiveRate() { return monedaActual === 'USD' ? tasaUSD : tasaEUR; }
 
-        // NUEVA API MUCHO MÁS ESTABLE (DolarAPI)
         async function fetchRates() {
             try {
                 statusBadge.textContent = 'Consultando tasas oficiales...';
                 statusBadge.classList.remove('error');
                 
-                // Consultar Dólar
                 const resUSD = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
                 if (!resUSD.ok) throw new Error('Error USD');
                 const dataUSD = await resUSD.json();
                 tasaUSD = dataUSD.promedio;
 
-                // Consultar Euro
                 const resEUR = await fetch('https://ve.dolarapi.com/v1/euros/oficial');
                 if (!resEUR.ok) throw new Error('Error EUR');
                 const dataEUR = await resEUR.json();
                 tasaEUR = dataEUR.promedio;
 
-                // Fecha
                 let fechaFormateada = "Hoy";
                 if(dataUSD.fechaActualizacion) {
                     const d = new Date(dataUSD.fechaActualizacion);
@@ -576,6 +569,7 @@
             const captureArea = document.getElementById('capture-area');
             const clone = captureArea.cloneNode(true);
 
+            // Aquí eliminamos el botón de actualizar para que NO salga en la foto
             clone.querySelectorAll('.copy-btn, .whatsapp-icon-top, #btn-refresh').forEach(el => el.remove());
 
             clone.querySelectorAll('.amount-input').forEach(input => {
