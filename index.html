@@ -41,7 +41,8 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding: 0; /* Sin espacios en los bordes */
+            /* AQUÍ ESTÁ EL ARREGLO: Márgenes a los lados y arriba */
+            padding: 15px; 
             color: var(--text-main);
         }
 
@@ -50,40 +51,37 @@
             max-width: 400px;
             display: flex;
             flex-direction: column;
-            gap: 10px; /* Espacio entre los botones de abajo */
-            padding-top: 10px;
+            gap: 12px; /* Espacio entre los botones y tarjetas */
         }
 
         #capture-area {
             background-color: var(--bg-color);
-            padding: 0;
             border-radius: 20px;
             display: flex;
             flex-direction: column;
-            gap: 5px; /* Prácticamente pegado entre logo, tarjeta y fecha */
+            gap: 10px; 
             width: 100%;
         }
 
-        /* LOGO MÁS GRANDE Y PEGADO */
         .app-header {
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             padding: 0;
-            margin-top: 10px;
-            margin-bottom: 5px; /* Espacio mínimo antes de la tarjeta */
+            margin-top: 5px;
+            margin-bottom: 5px; 
         }
 
         .app-header img {
-            max-height: 150px; /* Mucho más grande */
+            max-height: 120px; /* Tamaño ideal para que no ocupe toda la pantalla */
             max-width: 90%;
             object-fit: contain;
             border-radius: 12px; 
         }
 
         .logo-fallback {
-            font-size: 48px;
+            font-size: 42px;
             font-weight: 800;
             font-style: italic;
             letter-spacing: -1px;
@@ -225,7 +223,7 @@
 
         .bottom-bar {
             display: flex;
-            gap: 10px; /* Volvemos a poner espacio para el botón */
+            gap: 10px;
             width: 100%;
             margin-top: 5px;
         }
@@ -272,7 +270,6 @@
         .quick-amounts {
             display: flex;
             gap: 8px;
-            padding: 0 5px;
             margin-top: 5px; 
         }
 
@@ -311,6 +308,7 @@
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
             margin-top: 5px;
+            margin-bottom: 20px; /* Espacio extra al final de la pantalla */
         }
 
         .share-btn svg {
@@ -338,7 +336,6 @@
 
         svg { width: 24px; height: 24px; fill: currentColor; }
 
-        /* Esta clase ya solo afectará a los botones de copiar y al de whatsapp de arriba */
         .hide-in-capture {
             display: none !important;
         }
@@ -399,7 +396,6 @@
                 <div class="date-display">
                     <span id="datetime-text">Cargando...</span>
                 </div>
-                <!-- AQUÍ ESTÁ EL BOTÓN DE ACTUALIZAR (Ya no tiene la clase hide-in-capture) -->
                 <button class="icon-btn" id="btn-refresh" title="Actualizar tasas" onclick="actualizarTasas()">
                     <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                 </button>
@@ -569,7 +565,6 @@
             const captureArea = document.getElementById('capture-area');
             const clone = captureArea.cloneNode(true);
 
-            // Aquí eliminamos el botón de actualizar para que NO salga en la foto
             clone.querySelectorAll('.copy-btn, .whatsapp-icon-top, #btn-refresh').forEach(el => el.remove());
 
             clone.querySelectorAll('.amount-input').forEach(input => {
