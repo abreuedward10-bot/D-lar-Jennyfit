@@ -41,17 +41,17 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            /* AQUÍ ESTÁ EL ARREGLO: Márgenes a los lados y arriba */
-            padding: 15px; 
+            /* AQUÍ ESTÁ EL CAMBIO: 25px de margen a los lados */
+            padding: 20px 25px; 
             color: var(--text-main);
         }
 
         .app-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 380px; /* Reducido un poco para que no se vea estirado */
             display: flex;
             flex-direction: column;
-            gap: 12px; /* Espacio entre los botones y tarjetas */
+            gap: 12px; 
         }
 
         #capture-area {
@@ -61,6 +61,8 @@
             flex-direction: column;
             gap: 10px; 
             width: 100%;
+            /* Esto asegura que la foto también tenga un pequeño margen interno */
+            padding: 5px; 
         }
 
         .app-header {
@@ -74,8 +76,8 @@
         }
 
         .app-header img {
-            max-height: 120px; /* Tamaño ideal para que no ocupe toda la pantalla */
-            max-width: 90%;
+            max-height: 120px; 
+            max-width: 100%;
             object-fit: contain;
             border-radius: 12px; 
         }
@@ -308,7 +310,7 @@
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
             margin-top: 5px;
-            margin-bottom: 20px; /* Espacio extra al final de la pantalla */
+            margin-bottom: 20px; 
         }
 
         .share-btn svg {
