@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JennyFit - Calculadora BCV</title>
+    
+    <!-- ETIQUETAS PARA CONVERTIRLA EN APP NATIVA (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Referencia a tu icono para iOS -->
+    <link rel="apple-touch-icon" href="icon-512.png">
+    <!-- Icono general -->
+    <link rel="icon" type="image/png" href="icon-512.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #000000;           
+            --card-bg: #121212;            
+            --text-main: #ffffff;          
+            --text-muted: #888888;         
+            --accent-green: #00D32A;       
+            --accent-green-rgb: 0, 211, 42; 
+            --line-gray: #333333;          
+            --btn-refresh-bg: #1A1A1A;     
+            --whatsapp-green: #25D366;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul al tocar en móviles */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 10px;
+            color: var(--text-main);
+            padding-top: 10px; 
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #capture-area {
+            background-color: var(--bg-color);
+            padding: 5px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .app-header img {
+            max-height: 110px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 12px; 
+        }
+
+        #logo-upload {
+            display: none;
+        }
+
+        .main-card {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1.5px solid rgba(var(--accent-green-rgb), 0.3); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 100%;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pill-btn {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            font-weight: 800; 
+            font-size: 18px;
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(var(--accent-green-rgb), 0.4); 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pill-btn .swap-icon {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: bold;
+        }
+
+        .whatsapp-icon-top {
+            color: var(--whatsapp-green);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 500;
+            height: 15px; 
+        }
+        .status-badge.error {
+            color: #ff5252;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid var(--line-gray);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .currency-symbol {
+            font-size: 28px;
+            font-weight: 700;
+            width: 50px;
+            flex-shrink: 0;
+        }
+
+        .amount-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 36px; 
+            font-weight: 700;
+            text-align: right;
+            outline: none;
+            padding-right: 10px;
+            min-width: 0; 
+        }
+
+        .amount-input::-webkit-outer-spin-button,
+        .amount-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .amount-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .input-group.green .currency-symbol,
+        .input-group.green .amount-input {
+            color: #ffffff;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            margin-left: 5px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 15px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .trend-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bottom-bar {
+            display: flex;
+            gap: 0;
+            width: 100%;
+        }
+
+        .date-display {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 15px;
+            height: 55px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            border: 1px solid var(--line-gray);
+            white-space: nowrap; 
+        }
+
+        .icon-btn {
+            background-color: var(--btn-refresh-bg);
+            border-radius: 18px;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line-gray);
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .icon-btn.rotating svg {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 8px;
+            padding: 0 5px;
+            margin-top: 5px; 
+        }
+
+        .quick-btn {
+            flex: 1;
+            background-color: var(--card-bg);
+            border: 1px solid var(--line-gray);
+            color: var(--text-main);
+            border-radius: 12px;
+            padding: 12px 0;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:active, .quick-btn.active {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(var(--accent-green-rgb), 0.4);
+        }
+
+        .share-btn {
+            background-color: var(--whatsapp-green);
+            color: #000;
+            border: none;
+            border-radius: 18px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+            margin-top: 5px;
+        }
+
+        .share-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: #000;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            background-color: var(--accent-green);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 800;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(var(--accent-green-rgb), 0.4);
+        }
+        .toast.show { opacity: 1; }
+
+        svg { width: 24px; height: 24px; fill: currentColor; }
+
+        .hide-in-capture {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="capture-area">
+            <label for="logo-upload" class="app-header" title="Toca para cambiar el logo">
+                <img src="https://i.ibb.co/6PZgXK5/jennyfit-logo.png" alt="JennyFit Logo" id="app-logo">
+                <input type="file" id="logo-upload" accept="image/*">
+            </label>
+
+            <div class="main-card">
+                <div class="card-header">
+                    <button class="pill-btn" id="currency-toggle" onclick="toggleCurrency()">
+                        <span id="currency-name">Dólar BCV</span>
+                        <span class="swap-icon">⇄</span>
+                    </button>
+                    <div class="whatsapp-icon-top hide-in-capture" onclick="compartirWhatsApp()">
+                        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    </div>
+                </div>
+
+                <div id="status-badge" class="status-badge">Consultando tasas...</div>
+
+                <div class="input-group" id="foreign-group">
+                    <span class="currency-symbol" id="foreign-symbol">$</span>
+                    <input type="number" id="foreign-input" class="amount-input" value="1.00" step="0.01" placeholder="0.00">
+                    <button class="copy-btn hide-in-capture" onclick="copyValue('foreign-input')">
+                        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    </button>
+                </div>
+
+                <div class="input-group green" id="ves-group">
+                    <span class="currency-symbol">Bs</span>
+                    <input type="text" id="ves-input" class="amount-input" value="0,00" placeholder="0,00">
+                    <button class="copy-btn hide-in-capture" onclick="copyValue('ves-input')">
+                        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    </button>
+                </div>
+
+                <div class="trend-indicator">
+                    <div class="trend-left">
+                        <svg class="trend-icon" viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                        <span>Tasa Oficial BCV</span>
+                    </div>
+                    <svg style="fill: var(--text-muted);" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                </div>
+            </div>
+
+            <div class="bottom-bar">
+                <div class="date-display">
+                    <span id="datetime-text">Cargando...</span>
+                </div>
+                <button class="icon-btn hide-in-capture" id="btn-refresh" title="Actualizar tasas" onclick="actualizarTasas()">
+                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="quick-amounts">
+            <button class="quick-btn" onclick="setQuickAmount(5, this)">$5</button>
+            <button class="quick-btn" onclick="setQuickAmount(10, this)">$10</button>
+            <button class="quick-btn" onclick="setQuickAmount(15, this)">$15</button>
+            <button class="quick-btn" onclick="setQuickAmount(20, this)">$20</button>
+            <button class="quick-btn" onclick="setQuickAmount(25, this)">$25</button>
+        </div>
+
+        <button class="share-btn" onclick="compartirWhatsApp()">
+            <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            Enviar datos por WhatsApp
+        </button>
+    </div>
+
+    <div class="toast" id="toast">¡Copiado!</div>
+
+    <script>
+        // --- REGISTRO DEL SERVICE WORKER PARA QUE SEA INSTALABLE ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('SW registrado:', registration.scope))
+                    .catch(error => console.log('SW error:', error));
+            });
+        }
+
+        const API_URL = 'https://allratestoday.com/api/open/central-bank/bcv';
+        let tasaUSD = 0;
+        let tasaEUR = 0;
+        let monedaActual = 'USD'; 
+
+        const foreignInput = document.getElementById('foreign-input');
+        const vesInput = document.getElementById('ves-input');
+        const statusBadge = document.getElementById('status-badge');
+        const currencyName = document.getElementById('currency-name');
+        const foreignSymbol = document.getElementById('foreign-symbol');
+        const logoUpload = document.getElementById('logo-upload');
+        const appLogo = document.getElementById('app-logo');
+        const btnRefresh = document.getElementById('btn-refresh');
+        const datetimeText = document.getElementById('datetime-text');
+
+        const savedLogo = localStorage.getItem('miAppLogo');
+        if (savedLogo) { appLogo.src = savedLogo; }
+
+        logoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    appLogo.src = event.target.result;
+                    try { localStorage.setItem('miAppLogo', event.target.result); } catch (error) {}
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const dayName = days[now.getDay()];
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            datetimeText.textContent = `${dayName}, ${day}/${month}/${year} - ${hours}:${minutes} ${ampm}`;
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+
+        function actualizarTasas() {
+            btnRefresh.classList.add('rotating');
+            fetchRates().finally(() => { setTimeout(() => btnRefresh.classList.remove('rotating'), 500); });
+        }
+
+        function toggleCurrency() {
+            if (monedaActual === 'USD') {
+                monedaActual = 'EUR';
+                currencyName.textContent = 'Euro BCV';
+                foreignSymbol.textContent = '€';
+            } else {
+                monedaActual = 'USD';
+                currencyName.textContent = 'Dólar BCV';
+                foreignSymbol.textContent = '$';
+            }
+            if (foreignInput.value) convertirMonedaABolivar(foreignInput.value);
+        }
+
+        function getActiveRate() { return monedaActual === 'USD' ? tasaUSD : tasaEUR; }
+
+        async function fetchRates() {
+            try {
+                statusBadge.textContent = 'Consultando tasas oficiales...';
+                statusBadge.classList.remove('error');
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Error de red');
+                const data = await response.json();
+
+                const usdRateObj = data.rates.find(r => r.base === 'USD' && r.quote === 'VES' && r.type === 'sell');
+                const eurRateObj = data.rates.find(r => r.base === 'EUR' && r.quote === 'VES' && r.type === 'sell');
+
+                if (!usdRateObj) throw new Error('No se encontró la tasa');
+
+                tasaUSD = usdRateObj.value;
+                tasaEUR = eurRateObj ? eurRateObj.value : tasaUSD; 
+
+                let fechaFormateada = data.rate_date;
+                if (fechaFormateada && fechaFormateada.includes('-')) {
+                    const partes = fechaFormateada.split('-');
+                    fechaForma
