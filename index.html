@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,14 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JennyFit - Calculadora BCV</title>
     
-    <!-- ETIQUETAS PARA CONVERTIRLA EN APP NATIVA (PWA) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- Referencia a tu icono para iOS -->
     <link rel="apple-touch-icon" href="icon-512.png">
-    <!-- Icono general -->
     <link rel="icon" type="image/png" href="icon-512.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -35,7 +33,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Montserrat', sans-serif;
-            -webkit-tap-highlight-color: transparent; /* Quita el cuadro azul al tocar en móviles */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -67,13 +65,15 @@
             width: 100%;
         }
 
+        /* LOGO DE RESPALDO POR SI FALLA LA IMAGEN */
         .app-header {
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            padding: 0;
-            margin-top: 10px;
+            padding: 15px 0;
+            margin-top: 5px;
+            position: relative;
         }
 
         .app-header img {
@@ -82,6 +82,16 @@
             object-fit: contain;
             border-radius: 12px; 
         }
+
+        .logo-fallback {
+            font-size: 42px;
+            font-weight: 800;
+            font-style: italic;
+            letter-spacing: -1px;
+        }
+
+        .logo-fallback .white { color: #ffffff; }
+        .logo-fallback .green { color: var(--accent-green); }
 
         #logo-upload {
             display: none;
@@ -339,7 +349,12 @@
         
         <div id="capture-area">
             <label for="logo-upload" class="app-header" title="Toca para cambiar el logo">
-                <img src="https://i.ibb.co/6PZgXK5/jennyfit-logo.png" alt="JennyFit Logo" id="app-logo">
+                <!-- Imagen del logo. Si falla, muestra el texto JENNYFIT -->
+                <img src="https://i.ibb.co/6PZgXK5/jennyfit-logo.png" alt="JennyFit Logo" id="app-logo" style="display: none;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';" onload="this.style.display='block'; document.getElementById('fallback-logo').style.display='none';">
+                <!-- Logo de respaldo (Texto) -->
+                <div class="logo-fallback" id="fallback-logo" style="display: block;">
+                    <span class="white">JENNY</span><span class="green">FIT</span>
+                </div>
                 <input type="file" id="logo-upload" accept="image/*">
             </label>
 
@@ -408,16 +423,12 @@
     <div class="toast" id="toast">¡Copiado!</div>
 
     <script>
-        // --- REGISTRO DEL SERVICE WORKER PARA QUE SEA INSTALABLE ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(registration => console.log('SW registrado:', registration.scope))
-                    .catch(error => console.log('SW error:', error));
+                navigator.serviceWorker.register('sw.js').catch(error => console.log('SW error:', error));
             });
         }
 
-        const API_URL = 'https://allratestoday.com/api/open/central-bank/bcv';
         let tasaUSD = 0;
         let tasaEUR = 0;
         let monedaActual = 'USD'; 
@@ -432,8 +443,13 @@
         const btnRefresh = document.getElementById('btn-refresh');
         const datetimeText = document.getElementById('datetime-text');
 
-        const savedLogo = localStorage.getItem('miAppLogo');
-        if (savedLogo) { appLogo.src = savedLogo; }
+        // PROTECCIÓN DE MEMORIA (Evita que la app crashee si el teléfono bloquea el almacenamiento)
+        try {
+            const savedLogo = localStorage.getItem('miAppLogo');
+            if (savedLogo) { appLogo.src = savedLogo; }
+        } catch (e) {
+            console.warn("El almacenamiento local está bloqueado por el navegador.");
+        }
 
         logoUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -484,23 +500,167 @@
 
         function getActiveRate() { return monedaActual === 'USD' ? tasaUSD : tasaEUR; }
 
+        // NUEVA API MUCHO MÁS ESTABLE (DolarAPI)
         async function fetchRates() {
             try {
                 statusBadge.textContent = 'Consultando tasas oficiales...';
                 statusBadge.classList.remove('error');
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Error de red');
-                const data = await response.json();
+                
+                // Consultar Dólar
+                const resUSD = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                if (!resUSD.ok) throw new Error('Error USD');
+                const dataUSD = await resUSD.json();
+                tasaUSD = dataUSD.promedio;
 
-                const usdRateObj = data.rates.find(r => r.base === 'USD' && r.quote === 'VES' && r.type === 'sell');
-                const eurRateObj = data.rates.find(r => r.base === 'EUR' && r.quote === 'VES' && r.type === 'sell');
+                // Consultar Euro
+                const resEUR = await fetch('https://ve.dolarapi.com/v1/euros/oficial');
+                if (!resEUR.ok) throw new Error('Error EUR');
+                const dataEUR = await resEUR.json();
+                tasaEUR = dataEUR.promedio;
 
-                if (!usdRateObj) throw new Error('No se encontró la tasa');
+                // Fecha
+                let fechaFormateada = "Hoy";
+                if(dataUSD.fechaActualizacion) {
+                    const d = new Date(dataUSD.fechaActualizacion);
+                    fechaFormateada = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+                }
 
-                tasaUSD = usdRateObj.value;
-                tasaEUR = eurRateObj ? eurRateObj.value : tasaUSD; 
+                statusBadge.textContent = `Tasa oficial vigente del ${fechaFormateada}`;
+                if (foreignInput.value) convertirMonedaABolivar(foreignInput.value);
 
-                let fechaFormateada = data.rate_date;
-                if (fechaFormateada && fechaFormateada.includes('-')) {
-                    const partes = fechaFormateada.split('-');
-                    fechaForma
+            } catch (error) {
+                console.error('Error al obtener tasas:', error);
+                statusBadge.textContent = '⚠️ Error de red. Revisa tu VPN o internet.';
+                statusBadge.classList.add('error');
+                if (tasaUSD === 0) {
+                    tasaUSD = 911.62; tasaEUR = 980.00;
+                    convertirMonedaABolivar(foreignInput.value);
+                }
+            }
+        }
+
+        function convertirMonedaABolivar(valor) {
+            const tasa = getActiveRate();
+            if (!tasa) return;
+            let cantidad = parseFloat(valor);
+            if (!isNaN(cantidad)) { vesInput.value = (cantidad * tasa).toFixed(2).replace('.', ','); } 
+            else { vesInput.value = ''; }
+        }
+
+        function convertirBolivarAMoneda(valor) {
+            const tasa = getActiveRate();
+            if (!tasa) return;
+            let bolivares = parseFloat(valor.replace(',', '.'));
+            if (!isNaN(bolivares)) { foreignInput.value = (bolivares / tasa).toFixed(2); } 
+            else { foreignInput.value = ''; }
+        }
+
+        function setQuickAmount(amount, btnElement) {
+            if (monedaActual !== 'USD') {
+                toggleCurrency();
+            }
+            foreignInput.value = amount.toFixed(2);
+            convertirMonedaABolivar(foreignInput.value);
+            document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        foreignInput.addEventListener('input', (e) => {
+            convertirMonedaABolivar(e.target.value);
+            document.querySelectorAll('.quick-btn').forEach(btn => btn.classList.remove('active'));
+        });
+        
+        vesInput.addEventListener('input', (e) => convertirBolivarAMoneda(e.target.value));
+
+        async function compartirWhatsApp() {
+            const captureArea = document.getElementById('capture-area');
+            const clone = captureArea.cloneNode(true);
+
+            clone.querySelectorAll('.copy-btn, .whatsapp-icon-top, #btn-refresh').forEach(el => el.remove());
+
+            clone.querySelectorAll('.amount-input').forEach(input => {
+                const div = document.createElement('div');
+                div.style.flex = '1';
+                div.style.display = 'flex';
+                div.style.justifyContent = 'flex-end'; 
+                div.style.alignItems = 'center';
+                div.style.paddingRight = '10px';
+                div.style.fontSize = '36px';
+                div.style.fontWeight = '700';
+                div.style.fontFamily = "'Montserrat', sans-serif";
+                div.style.whiteSpace = 'nowrap';
+                div.style.color = '#ffffff';
+                
+                const span = document.createElement('span');
+                span.textContent = input.value;
+                div.appendChild(span);
+
+                input.parentNode.replaceChild(div, input);
+            });
+
+            const container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.style.width = captureArea.offsetWidth + 'px'; 
+            container.appendChild(clone);
+            document.body.appendChild(container);
+
+            try {
+                const canvas = await html2canvas(clone, {
+                    backgroundColor: '#000000',
+                    scale: 2,
+                    useCORS: true
+                });
+
+                canvas.toBlob(async function(blob) {
+                    const file = new File([blob], 'JennyFit_Pago.png', { type: 'image/png' });
+
+                    const montoBs = vesInput.value;
+                    const montoDivisa = foreignInput.value;
+                    const simbolo = monedaActual === 'USD' ? '$' : '€';
+
+                    const textoMensaje = `¡Hola! Aquí tienes los datos para tu pago en JennyFit.\n\n` +
+                                         `*Monto a pagar:*\n` +
+                                         `${montoBs} Bs (${simbolo}${montoDivisa})\n\n` +
+                                         `*Datos de Pago Móvil:*\n` +
+                                         `Teléfono: 04120160180\n` +
+                                         `Cédula: 16576839\n` +
+                                         `Banco: 0102\n\n` +
+                                         `Por favor, envía tu comprobante al recibir. ¡Gracias!`;
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], text: textoMensaje });
+                    } else {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'JennyFit_Pago.png';
+                        a.click();
+                        window.open(`https://wa.me/?text=${encodeURIComponent(textoMensaje)}`, '_blank');
+                    }
+                }, 'image/png');
+
+            } catch (error) {
+                console.error('Error al generar la imagen:', error);
+                alert('Hubo un error al generar la imagen. Intenta de nuevo.');
+            } finally {
+                document.body.removeChild(container);
+            }
+        }
+
+        function copyValue(inputId) {
+            const input = document.getElementById(inputId);
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            });
+        }
+
+        fetchRates();
+    </script>
+</body>
+</html>
