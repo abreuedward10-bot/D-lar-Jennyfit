@@ -41,7 +41,7 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding: 20px 25px; /* Márgenes laterales para pantallas grandes */
+            padding: 20px 25px; 
             color: var(--text-main);
         }
 
@@ -53,14 +53,12 @@
             gap: 15px; 
         }
 
-        /* Área de la foto: Solo el logo y la tarjeta */
         #capture-area {
             background-color: var(--bg-color);
             border-radius: 20px;
             display: flex;
             flex-direction: column;
             width: 100%;
-            /* Eliminamos gaps para que el logo quede pegado */
         }
 
         .app-header {
@@ -69,7 +67,7 @@
             align-items: center;
             cursor: pointer;
             padding: 0;
-            margin-bottom: -10px; /* Truco para acercar el logo a la tarjeta */
+            margin-bottom: -10px; 
         }
 
         .app-header img {
@@ -223,18 +221,17 @@
             gap: 10px;
         }
 
-        /* --- BARRA INFERIOR AHORA DENTRO DE LA TARJETA --- */
         .bottom-bar {
             display: flex;
             gap: 10px;
             width: 100%;
             padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05); /* Línea sutil divisoria */
+            border-top: 1px solid rgba(255, 255, 255, 0.05); 
         }
 
         .date-display {
             flex: 1;
-            background-color: var(--bg-color); /* Fondo negro para contrastar dentro de la tarjeta */
+            background-color: var(--bg-color); 
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -271,10 +268,10 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- BOTONES DE FUERA --- */
+        /* --- BOTONES DE MONTO --- */
         .quick-amounts {
             display: flex;
-            gap: 8px;
+            gap: 5px; /* Reducido ligeramente para que quepan los 6 botones */
             margin-top: 5px; 
         }
 
@@ -285,7 +282,7 @@
             color: var(--text-main);
             border-radius: 12px;
             padding: 12px 0;
-            font-size: 14px;
+            font-size: 13px; /* Letra un pelín más pequeña para que quepa todo */
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
@@ -350,7 +347,6 @@
 
     <div class="app-container">
         
-        <!-- ÁREA DE LA FOTO -->
         <div id="capture-area">
             <label for="logo-upload" class="app-header" title="Toca para cambiar el logo">
                 <img src="https://i.ibb.co/6PZgXK5/jennyfit-logo.png" alt="JennyFit Logo" id="app-logo" style="display: none;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';" onload="this.style.display='block'; document.getElementById('fallback-logo').style.display='none';">
@@ -397,7 +393,6 @@
                     <svg style="fill: var(--text-muted);" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
                 </div>
 
-                <!-- LA FECHA AHORA ESTÁ DENTRO DE LA TARJETA -->
                 <div class="bottom-bar">
                     <div class="date-display">
                         <span id="datetime-text">Cargando...</span>
@@ -409,13 +404,14 @@
             </div>
         </div>
 
-        <!-- BOTONES FUERA DE LA FOTO -->
+        <!-- AQUÍ ESTÁ EL NUEVO BOTÓN DE $50 -->
         <div class="quick-amounts">
             <button class="quick-btn" onclick="setQuickAmount(5, this)">$5</button>
             <button class="quick-btn" onclick="setQuickAmount(10, this)">$10</button>
             <button class="quick-btn" onclick="setQuickAmount(15, this)">$15</button>
             <button class="quick-btn" onclick="setQuickAmount(20, this)">$20</button>
             <button class="quick-btn" onclick="setQuickAmount(25, this)">$25</button>
+            <button class="quick-btn" onclick="setQuickAmount(50, this)">$50</button>
         </div>
 
         <button class="share-btn" onclick="compartirWhatsApp()">
@@ -573,7 +569,6 @@
             const captureArea = document.getElementById('capture-area');
             const clone = captureArea.cloneNode(true);
 
-            // Quitamos el botón de actualizar de la foto, pero dejamos la fecha
             clone.querySelectorAll('.copy-btn, .whatsapp-icon-top, #btn-refresh').forEach(el => el.remove());
 
             clone.querySelectorAll('.amount-input').forEach(input => {
