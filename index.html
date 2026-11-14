@@ -41,28 +41,26 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            /* AQUÍ ESTÁ EL CAMBIO: 25px de margen a los lados */
-            padding: 20px 25px; 
+            padding: 20px 25px; /* Márgenes laterales para pantallas grandes */
             color: var(--text-main);
         }
 
         .app-container {
             width: 100%;
-            max-width: 380px; /* Reducido un poco para que no se vea estirado */
+            max-width: 380px; 
             display: flex;
             flex-direction: column;
-            gap: 12px; 
+            gap: 15px; 
         }
 
+        /* Área de la foto: Solo el logo y la tarjeta */
         #capture-area {
             background-color: var(--bg-color);
             border-radius: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px; 
             width: 100%;
-            /* Esto asegura que la foto también tenga un pequeño margen interno */
-            padding: 5px; 
+            /* Eliminamos gaps para que el logo quede pegado */
         }
 
         .app-header {
@@ -71,12 +69,11 @@
             align-items: center;
             cursor: pointer;
             padding: 0;
-            margin-top: 5px;
-            margin-bottom: 5px; 
+            margin-bottom: -10px; /* Truco para acercar el logo a la tarjeta */
         }
 
         .app-header img {
-            max-height: 120px; 
+            max-height: 130px; 
             max-width: 100%;
             object-fit: contain;
             border-radius: 12px; 
@@ -103,6 +100,8 @@
             border: 1.5px solid rgba(var(--accent-green-rgb), 0.3); 
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             width: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .card-header {
@@ -212,6 +211,7 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 10px;
+            margin-bottom: 15px;
             font-size: 15px;
             color: #ffffff;
             font-weight: 600;
@@ -223,23 +223,25 @@
             gap: 10px;
         }
 
+        /* --- BARRA INFERIOR AHORA DENTRO DE LA TARJETA --- */
         .bottom-bar {
             display: flex;
             gap: 10px;
             width: 100%;
-            margin-top: 5px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05); /* Línea sutil divisoria */
         }
 
         .date-display {
             flex: 1;
-            background-color: var(--card-bg);
-            border-radius: 18px;
+            background-color: var(--bg-color); /* Fondo negro para contrastar dentro de la tarjeta */
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 15px;
-            height: 55px;
-            font-size: 14px;
+            padding: 0 10px;
+            height: 45px;
+            font-size: 12.5px;
             font-weight: 600;
             color: var(--text-main);
             border: 1px solid var(--line-gray);
@@ -247,16 +249,16 @@
         }
 
         .icon-btn {
-            background-color: var(--btn-refresh-bg);
-            border-radius: 18px;
-            width: 55px;
-            height: 55px;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid var(--line-gray);
             color: #ffffff;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
             flex-shrink: 0;
         }
@@ -269,6 +271,7 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* --- BOTONES DE FUERA --- */
         .quick-amounts {
             display: flex;
             gap: 8px;
@@ -347,6 +350,7 @@
 
     <div class="app-container">
         
+        <!-- ÁREA DE LA FOTO -->
         <div id="capture-area">
             <label for="logo-upload" class="app-header" title="Toca para cambiar el logo">
                 <img src="https://i.ibb.co/6PZgXK5/jennyfit-logo.png" alt="JennyFit Logo" id="app-logo" style="display: none;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';" onload="this.style.display='block'; document.getElementById('fallback-logo').style.display='none';">
@@ -392,18 +396,20 @@
                     </div>
                     <svg style="fill: var(--text-muted);" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
                 </div>
-            </div>
 
-            <div class="bottom-bar">
-                <div class="date-display">
-                    <span id="datetime-text">Cargando...</span>
+                <!-- LA FECHA AHORA ESTÁ DENTRO DE LA TARJETA -->
+                <div class="bottom-bar">
+                    <div class="date-display">
+                        <span id="datetime-text">Cargando...</span>
+                    </div>
+                    <button class="icon-btn" id="btn-refresh" title="Actualizar tasas" onclick="actualizarTasas()">
+                        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    </button>
                 </div>
-                <button class="icon-btn" id="btn-refresh" title="Actualizar tasas" onclick="actualizarTasas()">
-                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                </button>
             </div>
         </div>
 
+        <!-- BOTONES FUERA DE LA FOTO -->
         <div class="quick-amounts">
             <button class="quick-btn" onclick="setQuickAmount(5, this)">$5</button>
             <button class="quick-btn" onclick="setQuickAmount(10, this)">$10</button>
@@ -567,6 +573,7 @@
             const captureArea = document.getElementById('capture-area');
             const clone = captureArea.cloneNode(true);
 
+            // Quitamos el botón de actualizar de la foto, pero dejamos la fecha
             clone.querySelectorAll('.copy-btn, .whatsapp-icon-top, #btn-refresh').forEach(el => el.remove());
 
             clone.querySelectorAll('.amount-input').forEach(input => {
