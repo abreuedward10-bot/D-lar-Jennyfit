@@ -268,10 +268,9 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- BOTONES DE MONTO --- */
         .quick-amounts {
             display: flex;
-            gap: 5px; /* Reducido ligeramente para que quepan los 6 botones */
+            gap: 5px; 
             margin-top: 5px; 
         }
 
@@ -282,7 +281,7 @@
             color: var(--text-main);
             border-radius: 12px;
             padding: 12px 0;
-            font-size: 13px; /* Letra un pelín más pequeña para que quepa todo */
+            font-size: 13px; 
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
@@ -369,17 +368,19 @@
 
                 <div id="status-badge" class="status-badge">Consultando tasas...</div>
 
+                <!-- AQUÍ ESTÁ EL CAMBIO: inputmode="decimal" -->
                 <div class="input-group" id="foreign-group">
                     <span class="currency-symbol" id="foreign-symbol">$</span>
-                    <input type="number" id="foreign-input" class="amount-input" value="1.00" step="0.01" placeholder="0.00">
+                    <input type="number" inputmode="decimal" id="foreign-input" class="amount-input" value="1.00" step="0.01" placeholder="0.00">
                     <button class="copy-btn hide-in-capture" onclick="copyValue('foreign-input')">
                         <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                     </button>
                 </div>
 
+                <!-- AQUÍ ESTÁ EL CAMBIO: inputmode="decimal" -->
                 <div class="input-group green" id="ves-group">
                     <span class="currency-symbol">Bs</span>
-                    <input type="text" id="ves-input" class="amount-input" value="0,00" placeholder="0,00">
+                    <input type="text" inputmode="decimal" id="ves-input" class="amount-input" value="0,00" placeholder="0,00">
                     <button class="copy-btn hide-in-capture" onclick="copyValue('ves-input')">
                         <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
                     </button>
@@ -404,7 +405,6 @@
             </div>
         </div>
 
-        <!-- AQUÍ ESTÁ EL NUEVO BOTÓN DE $50 -->
         <div class="quick-amounts">
             <button class="quick-btn" onclick="setQuickAmount(5, this)">$5</button>
             <button class="quick-btn" onclick="setQuickAmount(10, this)">$10</button>
